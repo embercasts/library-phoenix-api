@@ -39,7 +39,7 @@ defmodule LibraryApi.Library do
 
     Book
     |> where([b], like(fragment("lower(?)", b.title), ^"%#{search_term}%"))
-    |> where([b], like(fragment("lower(?)", b.isbn), ^"%#{search_term}%"))
+    |> or_where([b], like(fragment("lower(?)", b.isbn), ^"%#{search_term}%"))
     |> Repo.all()
   end
 
