@@ -15,6 +15,12 @@ defmodule LibraryApiWeb.BookController do
     render(conn, "index.json-api", data: books)
   end
 
+  def books_for_author(conn, %{"author_id" => author_id}) do
+    books = Library.list_books_for_author(author_id)
+
+    render(conn, "index.json-api", data: books)
+  end
+
   def show(conn, %{"id" => id}) do
     book = Library.get_book!(id)
 
