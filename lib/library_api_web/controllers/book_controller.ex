@@ -37,11 +37,15 @@ defmodule LibraryApiWeb.BookController do
     data = JaSerializer.Params.to_attributes data
     data = Map.put data, "publish_date", Date.from_iso8601!(data["publish_date"])
 
-    with {:ok, %Book{} = book} <- Library.create_book(data) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", book_path(conn, :show, book))
-      |> render("show.json-api", data: book)
+    case Library.create_book(data) do
+      {:ok, %Book{} = book} ->
+        conn
+        |> put_status(:created)
+        |> render("show.json-api", data: book)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:bad_request)
+        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
 

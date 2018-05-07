@@ -36,9 +36,15 @@ defmodule LibraryApiWeb.ReviewController do
     review = Library.get_review!(id)
     data = JaSerializer.Params.to_attributes data
 
-    with {:ok, %Review{} = review} <- Library.update_review(review, data) do
-      conn
-      |> render("show.json-api", data: review)
+    case Library.create_review(data) do
+      {:ok, %Review{} = review} ->
+        conn
+        |> put_status(:created)
+        |> render("show.json-api", data: review)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:bad_request)
+        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
 

@@ -21,7 +21,7 @@ defmodule LibraryApi.Library do
     |> Repo.all()
   end
 
-  def get_author!(id), do: Repo.get(Author, id)
+  def get_author!(id), do: Repo.get!(Author, id)
 
   def get_author_for_book!(book_id) do
     book = get_book!(book_id)
