@@ -100,7 +100,7 @@ defmodule LibraryApi.Library do
     Repo.all(Review)
   end
 
-  def list_review_for_book(book_id) do
+  def list_reviews_for_book(book_id) do
     Review
     |> where([r], r.book_id == ^book_id)
     |> Repo.all()
