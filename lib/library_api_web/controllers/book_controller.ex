@@ -57,9 +57,14 @@ defmodule LibraryApiWeb.BookController do
       data = Map.put data, "publish_date", Date.from_iso8601!(data["publish_date"])
     end
 
-    with {:ok, %Book{} = book} <- Library.update_book(book, data) do
-      conn
-      |> render("show.json-api", data: book)
+    case Library.update_book(book, data) do
+      {:ok, %Book{} = book} ->
+        conn
+        |> render("show.json-api", data: book)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:bad_request)
+        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
 

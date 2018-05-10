@@ -3,6 +3,8 @@ defmodule LibraryApiWeb.UserController do
   alias LibraryApi.Library
   alias LibraryApi.Library.User
 
+  plug :authenticate_user when action in [:show_current]
+
   def create(conn, %{"data" => data = %{"type" => "users", "attributes" => _user_attrs}}) do
     attrs = JaSerializer.Params.to_attributes(data)
 
@@ -16,5 +18,10 @@ defmodule LibraryApiWeb.UserController do
         |> put_status(:bad_request)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
+  end
+
+  def show_current(conn, %{current_user: user}) do
+    conn
+      |> render("show.json-api", data: user)
   end
 end

@@ -24,11 +24,16 @@ defmodule LibraryApiWeb.ReviewController do
   def create(conn, %{"data" => data = %{"type" => "reviews", "attributes" => _review_params }}) do
     data = JaSerializer.Params.to_attributes data
 
-    with {:ok, %Review{} = review} <- Library.create_review(data) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", review_path(conn, :show, review))
-      |> render("show.json-api", data: review)
+    case Library.create_review(data) do
+      {:ok, %Review{} = review} ->
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", review_path(conn, :show, review))
+        |> render("show.json-api", data: review)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:bad_request)
+        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
 
@@ -36,10 +41,9 @@ defmodule LibraryApiWeb.ReviewController do
     review = Library.get_review!(id)
     data = JaSerializer.Params.to_attributes data
 
-    case Library.create_review(data) do
+    case Library.update_review(review, data) do
       {:ok, %Review{} = review} ->
         conn
-        |> put_status(:created)
         |> render("show.json-api", data: review)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn

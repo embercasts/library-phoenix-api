@@ -23,6 +23,34 @@ defmodule LibraryApiWeb do
       import Plug.Conn
       import LibraryApiWeb.Router.Helpers
       import LibraryApiWeb.Gettext
+
+      alias LibraryApi.Library
+
+      def authenticate_user(conn, _params) do
+        try do
+          ["Bearer " <> token] = get_req_header(conn, "authorization")
+
+          verified_token = token
+          |> Joken.token
+          |> Joken.with_signer(Joken.hs512(Application.get_env(:library_api, :jwt_secret)))
+          |> Joken.verify
+
+          %{"sub" => user_id} = verified_token.claims
+
+          user = Library.get_user!(user_id)
+
+          params = Map.get(conn, :params)
+          |> Map.put(:current_user, user)
+
+          conn
+          |> Map.put(:params, params)
+        rescue
+          err ->
+            conn
+            |> render(LibraryApiWeb.ErrorView, "401.json-api", %{detail: "User must be logged in to view this resource"})
+            |> halt
+        end
+      end
     end
   end
 
