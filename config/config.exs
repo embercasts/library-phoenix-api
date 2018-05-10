@@ -7,7 +7,8 @@ use Mix.Config
 
 # General application configuration
 config :library_api,
-  ecto_repos: [LibraryApi.Repo]
+  ecto_repos: [LibraryApi.Repo],
+  jwt_secret: System.get_env("JWT_SECRET") || "dyMqQgU1HQLDUQjyCxhjbMom56S7JLQDX8ZmfF/yJ/HqyllEzUxBlIxItSwouMzh"
 
 # Configures the endpoint
 config :library_api, LibraryApiWeb.Endpoint,

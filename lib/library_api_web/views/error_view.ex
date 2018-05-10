@@ -5,6 +5,11 @@ defmodule LibraryApiWeb.ErrorView do
     JaSerializer.EctoErrorSerializer.format(changeset)
   end
 
+  def render("401.json-api", %{detail: detail}) do
+    %{status: 401, title: "Unauthorized", detail: detail}
+    |> JaSerializer.ErrorSerializer.format()
+  end
+
   def render("404.json-api", _assigns) do
     %{title: "Page Not Found", status: 404}
     |> JaSerializer.ErrorSerializer.format()

@@ -42,7 +42,8 @@ defmodule LibraryApi.Mixfile do
       {:cors_plug, "~> 1.2"},
       {:ja_serializer, github: "vt-elixir/ja_serializer"},
       {:comeonin, "~> 4.0"},
-      {:bcrypt_elixir, "~> 1.0"}
+      {:bcrypt_elixir, "~> 1.0"},
+      {:joken, "~> 1.5.0"}
     ]
   end
 
