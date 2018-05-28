@@ -3,6 +3,8 @@ defmodule LibraryApiWeb.BookController do
   alias LibraryApi.Library
   alias LibraryApi.Library.Book
 
+  plug :authenticate_user when action in [:create]
+
   def index(conn, %{"filter" => %{"query" => search_term}}) do
     books = Library.search_books(search_term)
 
@@ -33,9 +35,13 @@ defmodule LibraryApiWeb.BookController do
     render(conn, "show.json-api", data: book)
   end
 
-  def create(conn, %{"data" => data = %{"type" => "books", "attributes" => _book_params }}) do
-    data = JaSerializer.Params.to_attributes data
-    data = Map.put data, "publish_date", Date.from_iso8601!(data["publish_date"])
+  def create(conn, %{:current_user => user, "data" => data = %{"type" => "books", "attributes" => _book_params }}) do
+    data = data
+    |> JaSerializer.Params.to_attributes()
+
+    data = data
+    |> Map.put("publish_date", Date.from_iso8601!(data["publish_date"]))
+    |> Map.put("user_id", user.id)
 
     case Library.create_book(data) do
       {:ok, %Book{} = book} ->
