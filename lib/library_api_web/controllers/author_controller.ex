@@ -24,7 +24,7 @@ defmodule LibraryApiWeb.AuthorController do
         |> render("show.json-api", data: author)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_status(:bad_request)
+        |> put_status(:unprocessable_entity)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
@@ -50,7 +50,7 @@ defmodule LibraryApiWeb.AuthorController do
         |> render("show.json-api", data: author)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_status(:bad_request)
+        |> put_status(:unprocessable_entity)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end

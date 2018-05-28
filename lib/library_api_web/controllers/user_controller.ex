@@ -15,7 +15,7 @@ defmodule LibraryApiWeb.UserController do
         |> render("show.json-api", data: user)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_status(:bad_request)
+        |> put_status(:unprocessable_entity)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end

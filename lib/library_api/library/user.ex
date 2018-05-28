@@ -16,6 +16,8 @@ defmodule LibraryApi.Library.User do
     timestamps()
   end
 
+  def hash_password(changeset = %{valid?: false}), do: changeset
+
   def hash_password(changeset) do
     hash = Bcrypt.hashpwsalt(get_field(changeset, :password))
 

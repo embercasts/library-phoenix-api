@@ -32,7 +32,7 @@ defmodule LibraryApiWeb.ReviewController do
         |> render("show.json-api", data: review)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_status(:bad_request)
+        |> put_status(:unprocessable_entity)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
@@ -47,7 +47,7 @@ defmodule LibraryApiWeb.ReviewController do
         |> render("show.json-api", data: review)
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_status(:bad_request)
+        |> put_status(:unprocessable_entity)
         |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
     end
   end
