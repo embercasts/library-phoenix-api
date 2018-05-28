@@ -15,7 +15,9 @@ defmodule LibraryApiWeb.AuthorController do
     render(conn, "index.json-api", data: authors)
   end
 
-  def create(conn, %{"data" => data = %{ "type" => "authors", "attributes" => author_params }}) do
+  def create(conn, %{"data" => data = %{ "type" => "authors", "attributes" => _author_params }}) do
+    data = JaSerializer.Params.to_attributes data
+
     case Library.create_author(data) do
       {:ok, %Author{} = author} ->
         conn
@@ -41,7 +43,8 @@ defmodule LibraryApiWeb.AuthorController do
     render(conn, "show.json-api", data: author)
   end
 
-  def update(conn, %{"id" => id, "data" => data = %{ "type" => "authors", "attributes" => author_params }}) do
+  def update(conn, %{"id" => id, "data" => data = %{ "type" => "authors", "attributes" => _author_params }}) do
+    data = JaSerializer.Params.to_attributes data
     author = Library.get_author!(id)
 
     case Library.update_author(author, data) do
