@@ -3,7 +3,7 @@ defmodule LibraryApiWeb.AuthorController do
   alias LibraryApi.Library
   alias LibraryApi.Library.Author
 
-  plug :authenticate_user when action in [:create]
+  plug :authenticate_user when action in [:create, :update, :delete]
 
   def index(conn, %{"filter" => %{"query" => search_term}}) do
     authors = Library.search_authors(search_term)
@@ -47,27 +47,37 @@ defmodule LibraryApiWeb.AuthorController do
     render(conn, "show.json-api", data: author)
   end
 
-  def update(conn, %{"id" => id, "data" => data = %{ "type" => "authors", "attributes" => _author_params }}) do
+  def update(conn, %{:current_user => current_user, "id" => id, "data" => data = %{ "type" => "authors", "attributes" => _author_params }}) do
     data = JaSerializer.Params.to_attributes data
     author = Library.get_author!(id)
 
-    case Library.update_author(author, data) do
-      {:ok, %Author{} = author} ->
-        conn
-        |> render("show.json-api", data: author)
-      {:error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
+    cond do
+      author.user_id == current_user.id ->
+        case Library.update_author(author, data) do
+          {:ok, %Author{} = author} ->
+            conn
+            |> render("show.json-api", data: author)
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
+        end
+      true ->
+        access_error conn
     end
   end
 
-  def delete(conn, %{"id" => id}) do
+  def delete(conn, %{:current_user => current_user, "id" => id}) do
     author = Library.get_author!(id)
 
-    with {:ok, %Author{}} <- Library.delete_author(author) do
-      conn
-      |> send_resp(:no_content, "")
+    cond do
+      author.user_id == current_user.id ->
+        with {:ok, %Author{}} <- Library.delete_author(author) do
+          conn
+          |> send_resp(:no_content, "")
+        end
+      true ->
+        access_error conn
     end
   end
 end

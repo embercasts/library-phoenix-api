@@ -26,6 +26,12 @@ defmodule LibraryApiWeb do
 
       alias LibraryApi.Library
 
+      def access_error(conn) do
+        conn
+        |> put_status(:forbidden)
+        |> render(LibraryApiWeb.ErrorView, "403.json-api", %{})
+      end
+
       def authenticate_user(conn, _params) do
         try do
           ["Bearer " <> token] = get_req_header(conn, "authorization")

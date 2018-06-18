@@ -3,7 +3,7 @@ defmodule LibraryApiWeb.BookController do
   alias LibraryApi.Library
   alias LibraryApi.Library.Book
 
-  plug :authenticate_user when action in [:create]
+  plug :authenticate_user when action in [:create, :update, :delete]
 
   def index(conn, %{"filter" => %{"query" => search_term}}) do
     books = Library.search_books(search_term)
@@ -55,30 +55,41 @@ defmodule LibraryApiWeb.BookController do
     end
   end
 
-  def update(conn, %{"id" => id, "data" => data = %{"type" => "books", "attributes" => _book_params }}) do
+  def update(conn, %{:current_user => current_user, "id" => id, "data" => data = %{"type" => "books", "attributes" => _book_params }}) do
     book = Library.get_book!(id)
-    data = JaSerializer.Params.to_attributes data
 
-    if data["publish_date"] do
-      data = Map.put data, "publish_date", Date.from_iso8601!(data["publish_date"])
-    end
+    cond do
+      book.user_id == current_user.id ->
+        data = JaSerializer.Params.to_attributes data
 
-    case Library.update_book(book, data) do
-      {:ok, %Book{} = book} ->
-        conn
-        |> render("show.json-api", data: book)
-      {:error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
+        if data["publish_date"] do
+          data = Map.put data, "publish_date", Date.from_iso8601!(data["publish_date"])
+        end
+
+        case Library.update_book(book, data) do
+          {:ok, %Book{} = book} ->
+            conn
+            |> render("show.json-api", data: book)
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(LibraryApiWeb.ErrorView, "400.json-api", changeset)
+        end
+      true ->
+        access_error conn
     end
   end
 
-  def delete(conn, %{"id" => id}) do
+  def delete(conn, %{:current_user => current_user, "id" => id}) do
     book = Library.get_book!(id)
 
-    with {:ok, %Book{}} <- Library.delete_book(book) do
-      send_resp(conn, :no_content, "")
+    cond do
+      book.user_id == current_user.id ->
+        with {:ok, %Book{}} <- Library.delete_book(book) do
+          send_resp(conn, :no_content, "")
+        end
+      true ->
+        access_error conn
     end
   end
 end

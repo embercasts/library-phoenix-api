@@ -10,6 +10,11 @@ defmodule LibraryApiWeb.ErrorView do
     |> JaSerializer.ErrorSerializer.format()
   end
 
+  def render("403.json-api", %{}) do
+    %{status: 403, title: "Forbidden", detail: "User does not have access to edit this resource"}
+    |> JaSerializer.ErrorSerializer.format()
+  end
+
   def render("404.json-api", _assigns) do
     %{title: "Page Not Found", status: 404}
     |> JaSerializer.ErrorSerializer.format()
