@@ -3,7 +3,13 @@ defmodule LibraryApiWeb.BookView do
   use JaSerializer.PhoenixView
 
   location "/books/:id"
-  attributes [:title, :isbn, :publish_date]
+  attributes [:username, :title, :isbn, :publish_date]
+
+  def attributes(model, conn) do
+    model
+    |> Map.put(:username, model.user.username)
+    |> super(conn)
+  end
 
   has_one :author,
     serializer: LibraryApiWeb.AuthorView,

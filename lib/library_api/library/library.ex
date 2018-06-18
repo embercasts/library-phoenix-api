@@ -10,7 +10,10 @@ defmodule LibraryApi.Library do
   alias LibraryApi.Library.Book
   alias LibraryApi.Library.Review
 
-  def list_authors, do: Repo.all(Author)
+  def load_user({:ok, model}), do: {:ok, Repo.preload(model, :user)}
+  def load_user({:error, model}), do: {:error, model}
+
+  def list_authors, do: Repo.all(Author) |> Repo.preload(:user)
 
   def search_authors(search_term) do
     search_term = String.downcase(search_term)
@@ -19,9 +22,10 @@ defmodule LibraryApi.Library do
     |> where([a], like(fragment("lower(?)", a.first), ^"%#{search_term}%"))
     |> or_where([a], like(fragment("lower(?)", a.last), ^"%#{search_term}%"))
     |> Repo.all()
+    |> Repo.preload(:user)
   end
 
-  def get_author!(id), do: Repo.get!(Author, id)
+  def get_author!(id), do: Repo.get!(Author, id) |> Repo.preload(:user)
 
   def get_author_for_book!(book_id) do
     book = get_book!(book_id)
@@ -29,29 +33,33 @@ defmodule LibraryApi.Library do
     book = Repo.preload(book, :author)
 
     book.author
+    |> Repo.preload(:user)
   end
 
   def create_author(attrs \\ %{}) do
     %Author{}
     |> Author.changeset(attrs)
     |> Repo.insert
+    |> load_user
   end
 
   def update_author(%Author{} = model, attrs \\ %{}) do
     model
     |> Author.changeset(attrs)
     |> Repo.update
+    |> load_user
   end
 
   def delete_author(%Author{} = model), do: Repo.delete(model)
 
   # Books
-  def list_books, do: Repo.all(Book)
+  def list_books, do: Repo.all(Book) |> Repo.preload(:user)
 
   def list_books_for_author(author_id) do
     Book
     |> where([b], b.author_id == ^author_id)
     |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   def search_books(search_term) do
@@ -61,9 +69,10 @@ defmodule LibraryApi.Library do
     |> where([b], like(fragment("lower(?)", b.title), ^"%#{search_term}%"))
     |> or_where([b], like(fragment("lower(?)", b.isbn), ^"%#{search_term}%"))
     |> Repo.all()
+    |> Repo.preload(:user)
   end
 
-  def get_book!(id), do: Repo.get!(Book, id)
+  def get_book!(id), do: Repo.get!(Book, id) |> Repo.preload(:user)
 
   def get_book_for_review!(review_id) do
     review = get_review!(review_id)
@@ -71,18 +80,21 @@ defmodule LibraryApi.Library do
     review = Repo.preload(review, :book)
 
     review.book
+    |> Repo.preload(:user)
   end
 
   def create_book(attrs \\ %{}) do
     %Book{}
     |> Book.changeset(attrs)
     |> Repo.insert
+    |> load_user
   end
 
   def update_book(%Book{} = model, attrs \\ %{}) do
     model
     |> Book.changeset(attrs)
     |> Repo.update
+    |> load_user
   end
 
   def delete_book(%Book{} = model), do: Repo.delete(model)
@@ -98,12 +110,14 @@ defmodule LibraryApi.Library do
   """
   def list_reviews do
     Repo.all(Review)
+    |> Repo.preload(:user)
   end
 
   def list_reviews_for_book(book_id) do
     Review
     |> where([r], r.book_id == ^book_id)
     |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   @doc """
@@ -120,7 +134,7 @@ defmodule LibraryApi.Library do
       ** (Ecto.NoResultsError)
 
   """
-  def get_review!(id), do: Repo.get!(Review, id)
+  def get_review!(id), do: Repo.get!(Review, id) |> Repo.preload(:user)
 
   @doc """
   Creates a review.
@@ -138,6 +152,7 @@ defmodule LibraryApi.Library do
     %Review{}
     |> Review.changeset(attrs)
     |> Repo.insert()
+    |> load_user()
   end
 
   @doc """
@@ -156,6 +171,7 @@ defmodule LibraryApi.Library do
     review
     |> Review.changeset(attrs)
     |> Repo.update()
+    |> load_user()
   end
 
   @doc """

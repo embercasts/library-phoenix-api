@@ -47,6 +47,7 @@ defmodule LibraryApiWeb do
         rescue
           err ->
             conn
+            |> put_status(:unauthorized)
             |> render(LibraryApiWeb.ErrorView, "401.json-api", %{detail: "User must be logged in to view this resource"})
             |> halt
         end

@@ -3,6 +3,8 @@ defmodule LibraryApiWeb.ReviewController do
   alias LibraryApi.Library
   alias LibraryApi.Library.Review
 
+  plug :authenticate_user when action in [:create]
+
   def index(conn, _params) do
     reviews = Library.list_reviews
 
@@ -21,8 +23,10 @@ defmodule LibraryApiWeb.ReviewController do
     render(conn, "show.json-api", data: review)
   end
 
-  def create(conn, %{"data" => data = %{"type" => "reviews", "attributes" => _review_params }}) do
-    data = JaSerializer.Params.to_attributes data
+  def create(conn, %{:current_user => user, "data" => data = %{"type" => "reviews", "attributes" => _review_params }}) do
+    data = data
+    |> JaSerializer.Params.to_attributes()
+    |> Map.put("user_id", user.id)
 
     case Library.create_review(data) do
       {:ok, %Review{} = review} ->
